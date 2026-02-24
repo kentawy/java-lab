@@ -1,3 +1,4 @@
+// Phone model class for Variant 3
 package org.example;
 
 import java.util.Objects;
