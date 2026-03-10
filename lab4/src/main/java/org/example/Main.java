@@ -5,10 +5,11 @@ import java.util.List;
 import java.util.Scanner;
 
 /**
- * Головний клас (Драйвер) для керування списком телефонів через консольне меню.
+ * Головний клас (Драйвер) для демонстрації наслідування та поліморфізму.
  */
 public class Main {
     private static final Scanner scanner = new Scanner(System.in);
+    // Колекція базового типу зберігає об'єкти як базового, так і похідних типів
     private static final List<Phone> phones = new ArrayList<>();
 
     public static void main(String[] args) {
@@ -16,34 +17,30 @@ public class Main {
         boolean exit = false;
 
         while (!exit) {
-            System.out.println("\n--- Меню керування телефоном ---");
-            System.out.println("1. Створити новий об’єкт");
-            System.out.println("2. Вивести інформацію про всі об’єкти");
-            System.out.println("3. Створити копію існуючого телефону (Конструктор копіювання)");
-            System.out.println("4. Створити замовлення з усіма телефонами (Агрегація)");
-            System.out.println("5. Вивести загальну кількість створених об'єктів Phone (Статичне поле)");
-            System.out.println("6. Завершити роботу");
+            System.out.println("\n--- Меню керування пристроями ---");
+            System.out.println("1. Створити звичайний телефон (Phone)");
+            System.out.println("2. Створити смартфон (SmartPhone)");
+            System.out.println("3. Створити кнопковий телефон (KeypadPhone)");
+            System.out.println("4. Вивести інформацію про всі пристрої (Поліморфізм)");
+            System.out.println("5. Завершити роботу");
             System.out.print("Виберіть опцію: ");
 
             String choice = scanner.nextLine();
 
             switch (choice) {
                 case "1":
-                    addPhone();
+                    addDevice(1);
                     break;
                 case "2":
-                    showAllPhones();
+                    addDevice(2);
                     break;
                 case "3":
-                    copyPhone();
+                    addDevice(3);
                     break;
                 case "4":
-                    createOrder();
+                    showAllDevices();
                     break;
                 case "5":
-                    System.out.println("Загалом створено об'єктів Phone: " + Phone.getTotalPhonesCreated());
-                    break;
-                case "6":
                     exit = true;
                     break;
                 default:
@@ -53,19 +50,20 @@ public class Main {
         }
     }
 
-    /**
-     * Метод для виведення інформаційної шапки.
-     */
     private static void printHeader() {
         System.out.println("======================================================");
-        System.out.println("Практична робота №6");
+        System.out.println("Практична робота №7");
         System.out.println("Виконав: студент групи ІН-33-4, Дмитренко Богдан Леонідович");
         System.out.println("Спеціальність: 122 Комп'ютерні науки");
-        System.out.println("Тема: Класи, статичні члени, агрегація, перерахування");
+        System.out.println("Тема: Наслідування, поліморфізм, колекції");
         System.out.println("======================================================");
     }
 
-    private static void addPhone() {
+    /**
+     * Загальний метод для створення об'єктів різних класів ієрархії.
+     * @param type 1 - Phone, 2 - SmartPhone, 3 - KeypadPhone
+     */
+    private static void addDevice(int type) {
         try {
             System.out.print("Введіть марку: ");
             String brand = scanner.nextLine();
@@ -82,73 +80,39 @@ public class Main {
             System.out.print("Виберіть ОС (ANDROID, IOS, HARMONY_OS, OTHER): ");
             OperatingSystem os = OperatingSystem.valueOf(scanner.nextLine().toUpperCase());
 
-            Phone phone = new Phone(brand, model, price, storage, os);
-            phones.add(phone);
-            System.out.println("Об'єкт успішно додано!");
+            if (type == 1) {
+                phones.add(new Phone(brand, model, price, storage, os));
+                System.out.println("Звичайний телефон додано!");
+            } else if (type == 2) {
+                System.out.print("Введіть кількість мегапікселів камери: ");
+                double camera = Double.parseDouble(scanner.nextLine());
+                phones.add(new SmartPhone(brand, model, price, storage, os, camera));
+                System.out.println("Смартфон додано!");
+            } else if (type == 3) {
+                System.out.print("Чи є ліхтарик? (true/false): ");
+                boolean flashlight = Boolean.parseBoolean(scanner.nextLine());
+                phones.add(new KeypadPhone(brand, model, price, storage, os, flashlight));
+                System.out.println("Кнопковий телефон додано!");
+            }
 
         } catch (NumberFormatException e) {
-            System.out.println("Помилка: Введіть числове значення для ціни та пам'яті.");
+            System.out.println("Помилка: Введіть коректне числове значення.");
         } catch (IllegalArgumentException e) {
-            System.out.println("Помилка валідації: Перевірте введені дані. " + e.getMessage());
+            System.out.println("Помилка валідації: " + e.getMessage());
         }
     }
 
-    private static void copyPhone() {
-        if (phones.isEmpty()) {
-            System.out.println("Немає доступних телефонів для копіювання.");
-            return;
-        }
-
-        System.out.println("Доступні телефони:");
-        for (int i = 0; i < phones.size(); i++) {
-            System.out.println((i + 1) + ". " + phones.get(i).getBrand() + " " + phones.get(i).getModel());
-        }
-
-        System.out.print("Введіть номер телефону для копіювання: ");
-        try {
-            int index = Integer.parseInt(scanner.nextLine()) - 1;
-            if (index >= 0 && index < phones.size()) {
-                Phone originalPhone = phones.get(index);
-                Phone copiedPhone = new Phone(originalPhone); // Виклик конструктора копіювання
-                phones.add(copiedPhone);
-                System.out.println("Телефон успішно скопійовано та додано до списку!");
-            } else {
-                System.out.println("Помилка: Невірний номер.");
-            }
-        } catch (NumberFormatException e) {
-            System.out.println("Помилка: Введіть коректне число.");
-        }
-    }
-
-    private static void createOrder() {
-        if (phones.isEmpty()) {
-            System.out.println("Список телефонів порожній. Немає що додавати до замовлення.");
-            return;
-        }
-
-        System.out.print("Введіть номер нового замовлення: ");
-        String orderId = scanner.nextLine();
-
-        try {
-            Order order = new Order(orderId);
-            for (Phone p : phones) {
-                order.addPhone(p);
-            }
-            System.out.println("Замовлення сформовано!");
-            order.printOrderDetails();
-        } catch (IllegalArgumentException e) {
-            System.out.println("Помилка створення замовлення: " + e.getMessage());
-        }
-    }
-
-    private static void showAllPhones() {
+    private static void showAllDevices() {
         if (phones.isEmpty()) {
             System.out.println("Список порожній.");
-        } else {
-            // Без використання Stream API
-            for (Phone phone : phones) {
-                System.out.println(phone.toString());
-            }
+            return;
+        }
+
+        System.out.println("\n--- Всі пристрої в єдиній колекції ---");
+        // Демонстрація поліморфізму:
+        // для кожного об'єкта викличеться СВІЙ перевизначений метод toString()
+        for (Phone phone : phones) {
+            System.out.println(phone.toString());
         }
     }
 }
