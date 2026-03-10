@@ -71,6 +71,10 @@ public class Phone {
         this.os = os;
     }
 
+    public String toFileString() {
+        return "Phone;" + brand + ";" + model + ";" + price + ";" + storageCapacity + ";" + os.name();
+    }
+
     @Override
     public String toString() {
         return String.format("Phone{brand='%s', model='%s', price=%.2f, storage=%dGB, OS=%s}",

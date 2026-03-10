@@ -13,6 +13,12 @@ public class SmartPhone extends Phone {
         setCameraMegapixels(cameraMegapixels);
     }
 
+    @Override
+    public String toFileString() {
+        return "SmartPhone;" + getBrand() + ";" + getModel() + ";" + getPrice() + ";" +
+                getStorageCapacity() + ";" + getOs().name() + ";" + cameraMegapixels;
+    }
+
     public double getCameraMegapixels() {
         return cameraMegapixels;
     }

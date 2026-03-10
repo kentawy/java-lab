@@ -4,7 +4,17 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="2c62fc84-2e77-4f6c-925f-a1effae345c5" name="Changes" comment="" />
+    <list default="true" id="2c62fc84-2e77-4f6c-925f-a1effae345c5" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/FoldablePhone.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/FoldablePhone.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/GamingPhone.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/GamingPhone.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/KeypadPhone.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/KeypadPhone.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/Main.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/Phone.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/Phone.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/SmartPhone.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/SmartPhone.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/org/example/Main.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/org/example/Main.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/org/example/Phone.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/org/example/Phone.class" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -44,12 +54,13 @@
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
     "Application.Main.executor": "Run",
+    "JUnit.PhoneTest.executor": "Run",
     "ModuleVcsDetector.initialDetectionPerformed": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
     "RunOnceActivity.git.unshallow": "true",
     "SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "git-widget-placeholder": "main",
+    "git-widget-placeholder": "feature/files",
     "kotlin-language-version-configured": "true",
     "onboarding.tips.debug.path": "C:/Users/sem4e/Desktop/OOP Java/java-lab/lab4/src/main/java/org/example/Main.java",
     "project.structure.last.edited": "Modules",

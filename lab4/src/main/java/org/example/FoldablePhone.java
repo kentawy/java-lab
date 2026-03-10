@@ -25,6 +25,12 @@ public class FoldablePhone extends SmartPhone {
     }
 
     @Override
+    public String toFileString() {
+        return "FoldablePhone;" + getBrand() + ";" + getModel() + ";" + getPrice() + ";" +
+                getStorageCapacity() + ";" + getOs().name() + ";" + getCameraMegapixels() + ";" + numberOfScreens;
+    }
+
+    @Override
     public String toString() {
         return super.toString().replace("}", ", screens=" + numberOfScreens + "}");
     }

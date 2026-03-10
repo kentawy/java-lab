@@ -19,6 +19,12 @@ public class KeypadPhone extends Phone {
         this.hasFlashlight = hasFlashlight;
     }
 
+    @Override
+    public String toFileString() {
+        return "KeypadPhone;" + getBrand() + ";" + getModel() + ";" + getPrice() + ";" +
+                getStorageCapacity() + ";" + getOs().name() + ";" + hasFlashlight;
+    }
+
     /**
      * Перевизначення методу для демонстрації поліморфізму.
      */
