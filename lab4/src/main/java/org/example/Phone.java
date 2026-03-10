@@ -4,35 +4,52 @@ import java.util.Objects;
 
 /**
  * Клас, що описує мобільний телефон.
- * Містить перевірку вхідних даних.
  */
 public class Phone {
+    // Статичне поле для підрахунку кількості створених об'єктів
+    private static int totalPhonesCreated = 0;
+
     private String brand;
     private String model;
     private double price;
-    private int storageCapacity; // 4-й атрибут
+    private int storageCapacity;
+    private OperatingSystem os; // Використання enum
 
     /**
-     * Конструктор для створення об'єкта Phone.
-     * @param brand Марка телефону
-     * @param model Модель телефону
-     * @param price Ціна (повинна бути > 0)
-     * @param storageCapacity Об'єм пам'яті (повинен бути > 0)
+     * Основний конструктор для створення об'єкта Phone.
      */
-    public Phone(String brand, String model, double price, int storageCapacity) {
+    public Phone(String brand, String model, double price, int storageCapacity, OperatingSystem os) {
         setBrand(brand);
         setModel(model);
         setPrice(price);
         setStorageCapacity(storageCapacity);
+        setOs(os);
+        totalPhonesCreated++; // Збільшуємо лічильник при створенні
+    }
+
+    /**
+     * Конструктор копіювання.
+     * @param other Об'єкт Phone, копію якого потрібно створити
+     */
+    public Phone(Phone other) {
+        if (other == null) {
+            throw new IllegalArgumentException("Об'єкт для копіювання не може бути null.");
+        }
+        this.brand = other.brand;
+        this.model = other.model;
+        this.price = other.price;
+        this.storageCapacity = other.storageCapacity;
+        this.os = other.os;
+        totalPhonesCreated++; // Збільшуємо лічильник і для копій
+    }
+
+    // Статичний метод (гетер) для отримання кількості створених об'єктів
+    public static int getTotalPhonesCreated() {
+        return totalPhonesCreated;
     }
 
     public String getBrand() { return brand; }
 
-    /**
-     * Встановлює марку телефону.
-     * @param brand Назва марки
-     * @throws IllegalArgumentException якщо рядок порожній
-     */
     public void setBrand(String brand) {
         if (brand == null || brand.trim().isEmpty()) {
             throw new IllegalArgumentException("Марка не може бути порожньою.");
@@ -42,11 +59,6 @@ public class Phone {
 
     public String getModel() { return model; }
 
-    /**
-     * Встановлює модель телефону.
-     * @param model Назва моделі
-     * @throws IllegalArgumentException якщо рядок порожній
-     */
     public void setModel(String model) {
         if (model == null || model.trim().isEmpty()) {
             throw new IllegalArgumentException("Модель не може бути порожньою.");
@@ -56,11 +68,6 @@ public class Phone {
 
     public double getPrice() { return price; }
 
-    /**
-     * Встановлює ціну телефону.
-     * @param price Значення ціни
-     * @throws IllegalArgumentException якщо ціна <= 0
-     */
     public void setPrice(double price) {
         if (price <= 0) {
             throw new IllegalArgumentException("Ціна повинна бути більшою за нуль.");
@@ -70,11 +77,6 @@ public class Phone {
 
     public int getStorageCapacity() { return storageCapacity; }
 
-    /**
-     * Встановлює об'єм пам'яті.
-     * @param storageCapacity Значення в ГБ
-     * @throws IllegalArgumentException якщо об'єм <= 0
-     */
     public void setStorageCapacity(int storageCapacity) {
         if (storageCapacity <= 0) {
             throw new IllegalArgumentException("Об'єм пам'яті повинен бути більшим за нуль.");
@@ -82,10 +84,19 @@ public class Phone {
         this.storageCapacity = storageCapacity;
     }
 
+    public OperatingSystem getOs() { return os; }
+
+    public void setOs(OperatingSystem os) {
+        if (os == null) {
+            throw new IllegalArgumentException("Операційна система не може бути null.");
+        }
+        this.os = os;
+    }
+
     @Override
     public String toString() {
-        return String.format("Phone{brand='%s', model='%s', price=%.2f, storage=%dGB}",
-                brand, model, price, storageCapacity);
+        return String.format("Phone{brand='%s', model='%s', price=%.2f, storage=%dGB, OS=%s}",
+                brand, model, price, storageCapacity, os);
     }
 
     @Override
@@ -96,6 +107,7 @@ public class Phone {
         return Double.compare(phone.price, price) == 0 &&
                 storageCapacity == phone.storageCapacity &&
                 Objects.equals(brand, phone.brand) &&
-                Objects.equals(model, phone.model);
+                Objects.equals(model, phone.model) &&
+                os == phone.os;
     }
 }
