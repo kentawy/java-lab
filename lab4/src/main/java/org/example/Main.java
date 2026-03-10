@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Scanner;
 
 /**
- * Головний клас (Драйвер) для керування ієрархією пристроїв та файловим вводом/виводом.
+ * Головний клас (Драйвер) для керування ієрархією пристроїв, файловим вводом/виводом та пошуком.
  */
 public class Main {
     private static final Scanner scanner = new Scanner(System.in);
@@ -26,22 +26,26 @@ public class Main {
 
         while (!exit) {
             System.out.println("\n=== Головне меню ===");
-            System.out.println("1. Створити новий об’єкт");
-            System.out.println("2. Вивести інформацію про всі об’єкти");
-            System.out.println("3. Завершити роботу програми (Зберегти у файл)");
+            System.out.println("1. Пошук об'єкта (за критеріями)");
+            System.out.println("2. Створити новий об’єкт");
+            System.out.println("3. Вивести інформацію про всі об’єкти");
+            System.out.println("4. Завершити роботу програми (Зберегти у файл)");
             System.out.print("Виберіть опцію: ");
 
             String choice = scanner.nextLine();
 
             switch (choice) {
                 case "1":
-                    showCreationMenu();
+                    showSearchMenu();
                     break;
                 case "2":
-                    showAllDevices();
+                    showCreationMenu();
                     break;
                 case "3":
-                    saveToFile(); // Записуємо дані при завершенні
+                    showAllDevices();
+                    break;
+                case "4":
+                    saveToFile();
                     exit = true;
                     System.out.println("Роботу завершено. Дані збережено.");
                     break;
@@ -54,11 +58,131 @@ public class Main {
 
     private static void printHeader() {
         System.out.println("======================================================");
-        System.out.println("Практична робота №9");
+        System.out.println("Практична робота №10");
         System.out.println("Виконав: студент групи ІН-33-4, Дмитренко Богдан Леонідович");
         System.out.println("Спеціальність: 122 Комп'ютерні науки");
-        System.out.println("Тема: Ієрархія успадкування, робота з файлами");
+        System.out.println("Тема: Пошук у колекціях");
         System.out.println("======================================================");
+    }
+
+    // --- БЛОК ПОШУКУ ---
+
+    private static void showSearchMenu() {
+        if (phones.isEmpty()) {
+            System.out.println("Колекція порожня. Немає серед чого шукати.");
+            return;
+        }
+
+        boolean back = false;
+        while (!back) {
+            System.out.println("\n--- Меню пошуку об'єкта ---");
+            System.out.println("1. Пошук за маркою (Brand)");
+            System.out.println("2. Пошук за діапазоном ціни (Min - Max)");
+            System.out.println("3. Пошук за операційною системою (OS)");
+            System.out.println("4. Повернутися до головного меню");
+            System.out.print("Оберіть критерій пошуку: ");
+
+            String choice = scanner.nextLine();
+
+            switch (choice) {
+                case "1":
+                    handleSearchByBrand();
+                    break;
+                case "2":
+                    handleSearchByPriceRange();
+                    break;
+                case "3":
+                    handleSearchByOs();
+                    break;
+                case "4":
+                    back = true;
+                    break;
+                default:
+                    System.out.println("Помилка: невідома опція.");
+                    break;
+            }
+        }
+    }
+
+    private static void handleSearchByBrand() {
+        System.out.print("Введіть марку для пошуку (наприклад, Apple): ");
+        String brand = scanner.nextLine();
+        List<Phone> results = searchByBrand(brand);
+        displaySearchResults(results, "маркою '" + brand + "'");
+    }
+
+    private static void handleSearchByPriceRange() {
+        try {
+            System.out.print("Введіть мінімальну ціну: ");
+            double minPrice = Double.parseDouble(scanner.nextLine());
+            System.out.print("Введіть максимальну ціну: ");
+            double maxPrice = Double.parseDouble(scanner.nextLine());
+
+            if (minPrice > maxPrice) {
+                System.out.println("Помилка: мінімальна ціна не може бути більшою за максимальну.");
+                return;
+            }
+
+            List<Phone> results = searchByPriceRange(minPrice, maxPrice);
+            displaySearchResults(results, "ціною від " + minPrice + " до " + maxPrice);
+        } catch (NumberFormatException e) {
+            System.out.println("Помилка: введіть коректне число.");
+        }
+    }
+
+    private static void handleSearchByOs() {
+        System.out.print("Введіть ОС для пошуку (ANDROID, IOS, HARMONY_OS, OTHER): ");
+        try {
+            OperatingSystem os = OperatingSystem.valueOf(scanner.nextLine().toUpperCase());
+            List<Phone> results = searchByOs(os);
+            displaySearchResults(results, "ОС '" + os.name() + "'");
+        } catch (IllegalArgumentException e) {
+            System.out.println("Помилка: такої ОС не існує в системі.");
+        }
+    }
+
+    // Окремий метод пошуку №1 (Без Stream API)
+    private static List<Phone> searchByBrand(String targetBrand) {
+        List<Phone> found = new ArrayList<>();
+        for (Phone phone : phones) {
+            if (phone.getBrand().equalsIgnoreCase(targetBrand.trim())) {
+                found.add(phone);
+            }
+        }
+        return found;
+    }
+
+    // Окремий метод пошуку №2 (Без Stream API)
+    private static List<Phone> searchByPriceRange(double min, double max) {
+        List<Phone> found = new ArrayList<>();
+        for (Phone phone : phones) {
+            if (phone.getPrice() >= min && phone.getPrice() <= max) {
+                found.add(phone);
+            }
+        }
+        return found;
+    }
+
+    // Окремий метод пошуку №3 (Без Stream API)
+    private static List<Phone> searchByOs(OperatingSystem targetOs) {
+        List<Phone> found = new ArrayList<>();
+        for (Phone phone : phones) {
+            if (phone.getOs() == targetOs) {
+                found.add(phone);
+            }
+        }
+        return found;
+    }
+
+    private static void displaySearchResults(List<Phone> results, String criteriaDescription) {
+        if (results.isEmpty()) {
+            System.out.println("-> Жодного об'єкта за критерієм " + criteriaDescription + " не знайдено.");
+        } else {
+            System.out.println("-> Знайдено " + results.size() + " об'єкт(ів) за " + criteriaDescription + ":");
+            for (Phone p : results) {
+                System.out.println(p.toString());
+            }
+        }
     }
 
     // --- БЛОК РОБОТИ З ФАЙЛАМИ ---
@@ -76,7 +200,7 @@ public class Main {
             int lineNumber = 0;
             while ((line = reader.readLine()) != null) {
                 lineNumber++;
-                if (line.trim().isEmpty()) continue; // Пропускаємо порожні рядки
+                if (line.trim().isEmpty()) continue;
 
                 try {
                     String[] parts = line.split(";");
@@ -110,10 +234,10 @@ public class Main {
                             phones.add(new FoldablePhone(brand, model, price, storage, os, cameraFp, screens));
                             break;
                         default:
-                            System.out.println("Помилка на рядку " + lineNumber + ": невідомий тип пристрою '" + type + "'. Рядок пропущено.");
+                            System.out.println("Помилка на рядку " + lineNumber + ": невідомий тип.");
                     }
                 } catch (Exception e) {
-                    System.out.println("Помилка парсингу на рядку " + lineNumber + ": некоректні дані. Рядок пропущено.");
+                    System.out.println("Помилка парсингу на рядку " + lineNumber + ".");
                 }
             }
             System.out.println("Завантаження завершено. Завантажено об'єктів: " + phones.size());
@@ -134,7 +258,7 @@ public class Main {
         }
     }
 
-    // --- БЛОК МЕНЮ ТА СТВОРЕННЯ (Залишається без суттєвих змін) ---
+    // --- БЛОК СТВОРЕННЯ ---
 
     private static void showCreationMenu() {
         boolean back = false;
