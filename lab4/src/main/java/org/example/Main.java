@@ -6,29 +6,26 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
-/**
- * Головний клас (Драйвер) для керування ієрархією пристроїв, файловим вводом/виводом та пошуком.
- */
 public class Main {
     private static final Scanner scanner = new Scanner(System.in);
-    private static final List<Phone> phones = new ArrayList<>();
+    // Використовуємо клас-контейнер замість прямого ArrayList
+    private static final Store store = new Store("TechStore СумДУ");
     private static final String FILE_NAME = "input.txt";
 
     public static void main(String[] args) {
         printHeader();
-        loadFromFile(); // Зчитуємо дані при запуску
+        loadFromFile();
 
         boolean exit = false;
 
         while (!exit) {
-            System.out.println("\n=== Головне меню ===");
-            System.out.println("1. Пошук об'єкта (за критеріями)");
-            System.out.println("2. Створити новий об’єкт");
-            System.out.println("3. Вивести інформацію про всі об’єкти");
+            System.out.println("\n=== Головне меню магазину '" + store.getStoreName() + "' ===");
+            System.out.println("1. Пошук товару (за критеріями)");
+            System.out.println("2. Створити та додати новий товар");
+            System.out.println("3. Вивести інформацію про асортимент");
             System.out.println("4. Завершити роботу програми (Зберегти у файл)");
             System.out.print("Виберіть опцію: ");
 
@@ -58,24 +55,24 @@ public class Main {
 
     private static void printHeader() {
         System.out.println("======================================================");
-        System.out.println("Практична робота №10");
+        System.out.println("Практична робота №11");
         System.out.println("Виконав: студент групи ІН-33-4, Дмитренко Богдан Леонідович");
         System.out.println("Спеціальність: 122 Комп'ютерні науки");
-        System.out.println("Тема: Пошук у колекціях");
+        System.out.println("Тема: Колекції, агрегація, класи-обгортки");
         System.out.println("======================================================");
     }
 
-    // --- БЛОК ПОШУКУ ---
+    // --- БЛОК ПОШУКУ (Викликає методи з Store) ---
 
     private static void showSearchMenu() {
-        if (phones.isEmpty()) {
-            System.out.println("Колекція порожня. Немає серед чого шукати.");
+        if (store.getInventory().isEmpty()) {
+            System.out.println("Магазин порожній. Немає серед чого шукати.");
             return;
         }
 
         boolean back = false;
         while (!back) {
-            System.out.println("\n--- Меню пошуку об'єкта ---");
+            System.out.println("\n--- Меню пошуку товару ---");
             System.out.println("1. Пошук за маркою (Brand)");
             System.out.println("2. Пошук за діапазоном ціни (Min - Max)");
             System.out.println("3. Пошук за операційною системою (OS)");
@@ -86,13 +83,33 @@ public class Main {
 
             switch (choice) {
                 case "1":
-                    handleSearchByBrand();
+                    System.out.print("Введіть марку: ");
+                    String brand = scanner.nextLine();
+                    displaySearchResults(store.searchByBrand(brand), "маркою '" + brand + "'");
                     break;
                 case "2":
-                    handleSearchByPriceRange();
+                    try {
+                        System.out.print("Введіть мінімальну ціну: ");
+                        double minPrice = Double.parseDouble(scanner.nextLine());
+                        System.out.print("Введіть максимальну ціну: ");
+                        double maxPrice = Double.parseDouble(scanner.nextLine());
+                        if (minPrice > maxPrice) {
+                            System.out.println("Помилка: мінімальна ціна більша за максимальну.");
+                        } else {
+                            displaySearchResults(store.searchByPriceRange(minPrice, maxPrice), "ціною від " + minPrice + " до " + maxPrice);
+                        }
+                    } catch (NumberFormatException e) {
+                        System.out.println("Помилка: введіть коректне число.");
+                    }
                     break;
                 case "3":
-                    handleSearchByOs();
+                    System.out.print("Введіть ОС (ANDROID, IOS, HARMONY_OS, OTHER): ");
+                    try {
+                        OperatingSystem os = OperatingSystem.valueOf(scanner.nextLine().toUpperCase());
+                        displaySearchResults(store.searchByOs(os), "ОС '" + os.name() + "'");
+                    } catch (IllegalArgumentException e) {
+                        System.out.println("Помилка: такої ОС не існує.");
+                    }
                     break;
                 case "4":
                     back = true;
@@ -104,83 +121,13 @@ public class Main {
         }
     }
 
-    private static void handleSearchByBrand() {
-        System.out.print("Введіть марку для пошуку (наприклад, Apple): ");
-        String brand = scanner.nextLine();
-        List<Phone> results = searchByBrand(brand);
-        displaySearchResults(results, "маркою '" + brand + "'");
-    }
-
-    private static void handleSearchByPriceRange() {
-        try {
-            System.out.print("Введіть мінімальну ціну: ");
-            double minPrice = Double.parseDouble(scanner.nextLine());
-            System.out.print("Введіть максимальну ціну: ");
-            double maxPrice = Double.parseDouble(scanner.nextLine());
-
-            if (minPrice > maxPrice) {
-                System.out.println("Помилка: мінімальна ціна не може бути більшою за максимальну.");
-                return;
-            }
-
-            List<Phone> results = searchByPriceRange(minPrice, maxPrice);
-            displaySearchResults(results, "ціною від " + minPrice + " до " + maxPrice);
-        } catch (NumberFormatException e) {
-            System.out.println("Помилка: введіть коректне число.");
-        }
-    }
-
-    private static void handleSearchByOs() {
-        System.out.print("Введіть ОС для пошуку (ANDROID, IOS, HARMONY_OS, OTHER): ");
-        try {
-            OperatingSystem os = OperatingSystem.valueOf(scanner.nextLine().toUpperCase());
-            List<Phone> results = searchByOs(os);
-            displaySearchResults(results, "ОС '" + os.name() + "'");
-        } catch (IllegalArgumentException e) {
-            System.out.println("Помилка: такої ОС не існує в системі.");
-        }
-    }
-
-    // Окремий метод пошуку №1 (Без Stream API)
-    private static List<Phone> searchByBrand(String targetBrand) {
-        List<Phone> found = new ArrayList<>();
-        for (Phone phone : phones) {
-            if (phone.getBrand().equalsIgnoreCase(targetBrand.trim())) {
-                found.add(phone);
-            }
-        }
-        return found;
-    }
-
-    // Окремий метод пошуку №2 (Без Stream API)
-    private static List<Phone> searchByPriceRange(double min, double max) {
-        List<Phone> found = new ArrayList<>();
-        for (Phone phone : phones) {
-            if (phone.getPrice() >= min && phone.getPrice() <= max) {
-                found.add(phone);
-            }
-        }
-        return found;
-    }
-
-    // Окремий метод пошуку №3 (Без Stream API)
-    private static List<Phone> searchByOs(OperatingSystem targetOs) {
-        List<Phone> found = new ArrayList<>();
-        for (Phone phone : phones) {
-            if (phone.getOs() == targetOs) {
-                found.add(phone);
-            }
-        }
-        return found;
-    }
-
-    private static void displaySearchResults(List<Phone> results, String criteriaDescription) {
+    private static void displaySearchResults(List<StoreItem> results, String criteriaDescription) {
         if (results.isEmpty()) {
-            System.out.println("-> Жодного об'єкта за критерієм " + criteriaDescription + " не знайдено.");
+            System.out.println("-> Жодного товару за критерієм " + criteriaDescription + " не знайдено.");
         } else {
-            System.out.println("-> Знайдено " + results.size() + " об'єкт(ів) за " + criteriaDescription + ":");
-            for (Phone p : results) {
-                System.out.println(p.toString());
+            System.out.println("-> Знайдено " + results.size() + " запис(ів) за " + criteriaDescription + ":");
+            for (StoreItem item : results) {
+                System.out.println(item.toString());
             }
         }
     }
@@ -190,11 +137,10 @@ public class Main {
     private static void loadFromFile() {
         File file = new File(FILE_NAME);
         if (!file.exists()) {
-            System.out.println("Файл " + FILE_NAME + " не знайдено. Буде створено новий під час збереження.");
+            System.out.println("Файл " + FILE_NAME + " не знайдено. Буде створено новий.");
             return;
         }
 
-        System.out.println("Завантаження даних із файлу " + FILE_NAME + "...");
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
             String line;
             int lineNumber = 0;
@@ -211,36 +157,38 @@ public class Main {
                     int storage = Integer.parseInt(parts[4]);
                     OperatingSystem os = OperatingSystem.valueOf(parts[5]);
 
+                    // Кількість завжди остання в рядку
+                    int quantity = Integer.parseInt(parts[parts.length - 1]);
+                    Phone phone = null;
+
                     switch (type) {
                         case "Phone":
-                            phones.add(new Phone(brand, model, price, storage, os));
+                            phone = new Phone(brand, model, price, storage, os);
                             break;
                         case "SmartPhone":
-                            double cameraSp = Double.parseDouble(parts[6]);
-                            phones.add(new SmartPhone(brand, model, price, storage, os, cameraSp));
+                            phone = new SmartPhone(brand, model, price, storage, os, Double.parseDouble(parts[6]));
                             break;
                         case "KeypadPhone":
-                            boolean flashlight = Boolean.parseBoolean(parts[6]);
-                            phones.add(new KeypadPhone(brand, model, price, storage, os, flashlight));
+                            phone = new KeypadPhone(brand, model, price, storage, os, Boolean.parseBoolean(parts[6]));
                             break;
                         case "GamingPhone":
-                            double cameraGp = Double.parseDouble(parts[6]);
-                            String cooling = parts[7];
-                            phones.add(new GamingPhone(brand, model, price, storage, os, cameraGp, cooling));
+                            phone = new GamingPhone(brand, model, price, storage, os, Double.parseDouble(parts[6]), parts[7]);
                             break;
                         case "FoldablePhone":
-                            double cameraFp = Double.parseDouble(parts[6]);
-                            int screens = Integer.parseInt(parts[7]);
-                            phones.add(new FoldablePhone(brand, model, price, storage, os, cameraFp, screens));
+                            phone = new FoldablePhone(brand, model, price, storage, os, Double.parseDouble(parts[6]), Integer.parseInt(parts[7]));
                             break;
                         default:
-                            System.out.println("Помилка на рядку " + lineNumber + ": невідомий тип.");
+                            System.out.println("Рядок " + lineNumber + ": невідомий тип.");
+                    }
+
+                    if (phone != null) {
+                        store.addNewPhone(phone, quantity);
                     }
                 } catch (Exception e) {
                     System.out.println("Помилка парсингу на рядку " + lineNumber + ".");
                 }
             }
-            System.out.println("Завантаження завершено. Завантажено об'єктів: " + phones.size());
+            System.out.println("Завантаження завершено. Записів у магазині: " + store.getInventory().size());
         } catch (IOException e) {
             System.out.println("Помилка при читанні файлу: " + e.getMessage());
         }
@@ -248,111 +196,90 @@ public class Main {
 
     private static void saveToFile() {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(FILE_NAME))) {
-            for (Phone phone : phones) {
-                writer.write(phone.toFileString());
+            for (StoreItem item : store.getInventory()) {
+                writer.write(item.toFileString());
                 writer.newLine();
             }
-            System.out.println("Успішно записано " + phones.size() + " об'єктів у файл " + FILE_NAME + ".");
+            System.out.println("Успішно записано " + store.getInventory().size() + " запис(ів) у файл " + FILE_NAME + ".");
         } catch (IOException e) {
-            System.out.println("Помилка при записі у файл: " + e.getMessage());
+            System.out.println("Помилка при записі: " + e.getMessage());
         }
     }
 
     // --- БЛОК СТВОРЕННЯ ---
 
     private static void showCreationMenu() {
-        boolean back = false;
-        while (!back) {
-            System.out.println("\n--- Меню створення об'єкта ---");
-            System.out.println("1. Phone (Звичайний телефон)");
-            System.out.println("2. SmartPhone (Смартфон)");
-            System.out.println("3. KeypadPhone (Кнопковий телефон)");
-            System.out.println("4. GamingPhone (Ігровий смартфон)");
-            System.out.println("5. FoldablePhone (Складаний смартфон)");
-            System.out.println("6. Повернутися до головного меню");
-            System.out.print("Оберіть тип пристрою: ");
+        System.out.println("\n--- Меню створення товару ---");
+        System.out.println("1. Phone | 2. SmartPhone | 3. KeypadPhone | 4. GamingPhone | 5. FoldablePhone");
+        System.out.print("Оберіть тип (1-5) або 0 для скасування: ");
 
-            String choice = scanner.nextLine();
+        String choice = scanner.nextLine();
+        if (choice.equals("0")) return;
 
-            if (choice.equals("6")) {
-                back = true;
-                continue;
+        try {
+            int type = Integer.parseInt(choice);
+            if (type >= 1 && type <= 5) {
+                System.out.print("Введіть кількість для додавання (шт): ");
+                int quantity = Integer.parseInt(scanner.nextLine());
+                addDevice(type, quantity);
+            } else {
+                System.out.println("Помилка: невірний тип.");
             }
-
-            try {
-                int type = Integer.parseInt(choice);
-                if (type >= 1 && type <= 5) {
-                    addDevice(type);
-                    back = true;
-                } else {
-                    System.out.println("Помилка: оберіть число від 1 до 6.");
-                }
-            } catch (NumberFormatException e) {
-                System.out.println("Помилка: введіть коректне число.");
-            }
+        } catch (NumberFormatException e) {
+            System.out.println("Помилка: введіть коректне число.");
         }
     }
 
-    private static void addDevice(int type) {
+    private static void addDevice(int type, int quantity) {
         try {
             System.out.print("Введіть марку: ");
             String brand = scanner.nextLine();
-
             System.out.print("Введіть модель: ");
             String model = scanner.nextLine();
-
             System.out.print("Введіть ціну: ");
             double price = Double.parseDouble(scanner.nextLine());
-
             System.out.print("Введіть об'єм пам'яті (ГБ): ");
             int storage = Integer.parseInt(scanner.nextLine());
-
             System.out.print("Виберіть ОС (ANDROID, IOS, HARMONY_OS, OTHER): ");
             OperatingSystem os = OperatingSystem.valueOf(scanner.nextLine().toUpperCase());
 
+            Phone phone = null;
             if (type == 1) {
-                phones.add(new Phone(brand, model, price, storage, os));
-                System.out.println("Об'єкт Phone успішно додано!");
+                phone = new Phone(brand, model, price, storage, os);
             } else if (type == 3) {
                 System.out.print("Чи є ліхтарик? (true/false): ");
-                boolean flashlight = Boolean.parseBoolean(scanner.nextLine());
-                phones.add(new KeypadPhone(brand, model, price, storage, os, flashlight));
-                System.out.println("Об'єкт KeypadPhone успішно додано!");
+                phone = new KeypadPhone(brand, model, price, storage, os, Boolean.parseBoolean(scanner.nextLine()));
             } else {
-                System.out.print("Введіть кількість мегапікселів камери: ");
+                System.out.print("Мегапікселі камери: ");
                 double camera = Double.parseDouble(scanner.nextLine());
-
                 if (type == 2) {
-                    phones.add(new SmartPhone(brand, model, price, storage, os, camera));
-                    System.out.println("Об'єкт SmartPhone успішно додано!");
+                    phone = new SmartPhone(brand, model, price, storage, os, camera);
                 } else if (type == 4) {
-                    System.out.print("Введіть тип системи охолодження: ");
-                    String cooling = scanner.nextLine();
-                    phones.add(new GamingPhone(brand, model, price, storage, os, camera, cooling));
-                    System.out.println("Об'єкт GamingPhone успішно додано!");
+                    System.out.print("Система охолодження: ");
+                    phone = new GamingPhone(brand, model, price, storage, os, camera, scanner.nextLine());
                 } else if (type == 5) {
-                    System.out.print("Введіть кількість екранів: ");
-                    int screens = Integer.parseInt(scanner.nextLine());
-                    phones.add(new FoldablePhone(brand, model, price, storage, os, camera, screens));
-                    System.out.println("Об'єкт FoldablePhone успішно додано!");
+                    System.out.print("Кількість екранів: ");
+                    phone = new FoldablePhone(brand, model, price, storage, os, camera, Integer.parseInt(scanner.nextLine()));
                 }
             }
-        } catch (NumberFormatException e) {
-            System.out.println("Помилка: Введіть коректне числове значення.");
-        } catch (IllegalArgumentException e) {
-            System.out.println("Помилка валідації: " + e.getMessage());
+
+            if (phone != null) {
+                store.addNewPhone(phone, quantity);
+                System.out.println("Товар успішно додано до інвентарю!");
+            }
+        } catch (Exception e) {
+            System.out.println("Помилка: " + e.getMessage());
         }
     }
 
     private static void showAllDevices() {
-        if (phones.isEmpty()) {
-            System.out.println("Колекція порожня.");
+        if (store.getInventory().isEmpty()) {
+            System.out.println("Асортимент порожній.");
             return;
         }
-
-        System.out.println("\n--- Всі об'єкти в колекції ---");
-        for (Phone phone : phones) {
-            System.out.println(phone.toString());
+        System.out.println("\n--- Всі товари в магазині ---");
+        for (StoreItem item : store.getInventory()) {
+            System.out.println(item.toString());
         }
     }
 }
