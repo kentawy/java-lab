@@ -5,7 +5,7 @@ import java.util.Objects;
 /**
  * Базовий клас, що описує мобільний телефон.
  */
-public class Phone {
+public abstract class Phone implements Comparable<Phone> {
     private String brand;
     private String model;
     private double price;
@@ -91,5 +91,10 @@ public class Phone {
                 Objects.equals(brand, phone.brand) &&
                 Objects.equals(model, phone.model) &&
                 os == phone.os;
+    }
+
+    @Override
+    public int compareTo(Phone other) {
+        return this.brand.compareTo(other.brand);
     }
 }
