@@ -14,8 +14,24 @@ public class Main {
     // Використовуємо клас-контейнер замість прямого ArrayList
     private static final Store store = new Store("TechStore СумДУ");
     private static final String FILE_NAME = "input.txt";
+    private static DatabaseManager dbManager;
 
     public static void main(String[] args) {
+        String configPath = "app.properties"; // fallback значення для зручності запуску з IDE
+        if (args.length > 0) {
+            configPath = args[0];
+        } else {
+            System.out.println("Попередження: шлях до конфігураційного файлу не передано через аргументи.");
+            System.out.println("Використовується шлях за замовчуванням: " + configPath);
+        }
+        
+        try {
+            dbManager = new DatabaseManager(configPath);
+        } catch (Exception e) {
+            System.err.println("Помилка ініціалізації БД: " + e.getMessage());
+            System.exit(1);
+        }
+
         printHeader();
         loadFromFile();
 
@@ -55,10 +71,10 @@ public class Main {
 
     private static void printHeader() {
         System.out.println("======================================================");
-        System.out.println("Практична робота №11");
+        System.out.println("Практична робота №12");
         System.out.println("Виконав: студент групи ІН-33-4, Дмитренко Богдан Леонідович");
         System.out.println("Спеціальність: 122 Комп'ютерні науки");
-        System.out.println("Тема: Колекції, агрегація, класи-обгортки");
+        System.out.println("Тема: Збереження даних у базі даних (JDBC)");
         System.out.println("======================================================");
     }
 
@@ -266,6 +282,10 @@ public class Main {
             if (phone != null) {
                 store.addNewPhone(phone, quantity);
                 System.out.println("Товар успішно додано до інвентарю!");
+                
+                // Збереження в БД
+                StoreItem itemToSave = new StoreItem(phone, quantity);
+                dbManager.saveStoreItem(itemToSave);
             }
         } catch (Exception e) {
             System.out.println("Помилка: " + e.getMessage());
