@@ -6,9 +6,12 @@ import static org.junit.jupiter.api.Assertions.*;
 class PhoneTest {
 
     @Test
-    void shouldCreateBasePhone() {
-        Phone phone = new Phone("Apple", "iPhone 15", 40000, 128, OperatingSystem.IOS);
-        assertEquals("Apple", phone.getBrand());
+    void shouldSortPhonesByBrand() {
+        Phone p1 = new SmartPhone("ZTE", "Axon 30", 15000, 128, OperatingSystem.ANDROID, 64.0);
+        Phone p2 = new SmartPhone("Apple", "iPhone 15", 40000, 128, OperatingSystem.IOS, 48.0);
+        assertTrue(p1.compareTo(p2) > 0);
+        assertTrue(p2.compareTo(p1) < 0);
+        assertEquals(0, p1.compareTo(p1));
     }
 
     @Test

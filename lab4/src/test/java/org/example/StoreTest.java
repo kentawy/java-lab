@@ -17,7 +17,8 @@ class StoreTest {
     @BeforeEach
     void setUp() {
         store = new Store("Test Store");
-        testPhone = new Phone("Apple", "iPhone 13", 30000, 128, OperatingSystem.IOS);
+        // Phone тепер абстрактний, тому створюємо об'єкт конкретного класу
+        testPhone = new SmartPhone("Apple", "iPhone 13", 30000, 128, OperatingSystem.IOS, 12.0);
     }
 
     @Test
