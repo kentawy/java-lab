@@ -1,0 +1,7 @@
+Phone;abc;ssd;1450.0;16;IOS;1
+Phone;Nokia;1100;800.0;1;OTHER;1
+SmartPhone;Apple;iPhone 15 Pro;45000.0;256;IOS;48.0;1
+SmartPhone;Samsung;Galaxy S24;40000.0;128;ANDROID;50.0;1
+KeypadPhone;Philips;Xenium;1200.0;2;OTHER;true;1
+GamingPhone;Asus;ROG Phone 8;55000.0;512;ANDROID;50.0;AeroActive Cooler;1
+FoldablePhone;Samsung;Galaxy Z Fold 5;65000.0;512;ANDROID;50.0;2;1
