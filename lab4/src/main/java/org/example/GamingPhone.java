@@ -27,7 +27,7 @@ public class GamingPhone extends SmartPhone {
     @Override
     public String toFileString() {
         return "GamingPhone;" + getBrand() + ";" + getModel() + ";" + getPrice() + ";" +
-                getStorageCapacity() + ";" + getOs().name() + ";" + getCameraMegapixels() + ";" + coolingSystem;
+                getStorageCapacity() + ";" + getOs().name() + ";" + getCameraMegapixels() + ";" + coolingSystem + ";" + getUuid().toString();
     }
 
     @Override

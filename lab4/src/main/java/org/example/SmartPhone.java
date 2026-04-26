@@ -16,7 +16,7 @@ public class SmartPhone extends Phone {
     @Override
     public String toFileString() {
         return "SmartPhone;" + getBrand() + ";" + getModel() + ";" + getPrice() + ";" +
-                getStorageCapacity() + ";" + getOs().name() + ";" + cameraMegapixels;
+                getStorageCapacity() + ";" + getOs().name() + ";" + cameraMegapixels + ";" + getUuid().toString();
     }
 
     public double getCameraMegapixels() {

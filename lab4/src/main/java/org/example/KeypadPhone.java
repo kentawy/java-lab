@@ -22,7 +22,7 @@ public class KeypadPhone extends Phone {
     @Override
     public String toFileString() {
         return "KeypadPhone;" + getBrand() + ";" + getModel() + ";" + getPrice() + ";" +
-                getStorageCapacity() + ";" + getOs().name() + ";" + hasFlashlight;
+                getStorageCapacity() + ";" + getOs().name() + ";" + hasFlashlight + ";" + getUuid().toString();
     }
 
     /**

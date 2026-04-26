@@ -1,11 +1,13 @@
 package org.example;
 
 import java.util.Objects;
+import java.util.UUID;
 
 /**
  * Базовий клас, що описує мобільний телефон.
  */
-public abstract class Phone implements Comparable<Phone> {
+public abstract class Phone implements Comparable<Phone>, Identifiable {
+    private UUID uuid;
     private String brand;
     private String model;
     private double price;
@@ -13,6 +15,7 @@ public abstract class Phone implements Comparable<Phone> {
     private OperatingSystem os;
 
     public Phone(String brand, String model, double price, int storageCapacity, OperatingSystem os) {
+        this.uuid = UUID.randomUUID();
         setBrand(brand);
         setModel(model);
         setPrice(price);
@@ -24,11 +27,22 @@ public abstract class Phone implements Comparable<Phone> {
         if (other == null) {
             throw new IllegalArgumentException("Об'єкт для копіювання не може бути null.");
         }
+        this.uuid = UUID.randomUUID(); // Копія отримує свій унікальний ID
         this.brand = other.brand;
         this.model = other.model;
         this.price = other.price;
         this.storageCapacity = other.storageCapacity;
         this.os = other.os;
+    }
+
+    @Override
+    public UUID getUuid() {
+        return uuid;
+    }
+
+    // Для завантаження з файлу (щоб ID не змінювався при кожному перезапуску)
+    protected void setUuid(UUID uuid) {
+        this.uuid = uuid;
     }
 
     public String getBrand() { return brand; }
@@ -72,13 +86,13 @@ public abstract class Phone implements Comparable<Phone> {
     }
 
     public String toFileString() {
-        return "Phone;" + brand + ";" + model + ";" + price + ";" + storageCapacity + ";" + os.name();
+        return "Phone;" + brand + ";" + model + ";" + price + ";" + storageCapacity + ";" + os.name() + ";" + uuid.toString();
     }
 
     @Override
     public String toString() {
-        return String.format("Phone{brand='%s', model='%s', price=%.2f, storage=%dGB, OS=%s}",
-                brand, model, price, storageCapacity, os);
+        return String.format("Phone{ID='%s', brand='%s', model='%s', price=%.2f, storage=%dGB, OS=%s}",
+                uuid.toString(), brand, model, price, storageCapacity, os);
     }
 
     @Override
