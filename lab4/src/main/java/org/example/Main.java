@@ -68,10 +68,10 @@ public class Main {
 
     private static void printHeader() {
         System.out.println("======================================================");
-        System.out.println("Практична робота №17");
+        System.out.println("Практична робота №18");
         System.out.println("Виконав: студент групи ІН-33-4, Дмитренко Богдан Леонідович");
         System.out.println("Спеціальність: 122 Комп'ютерні науки");
-        System.out.println("Тема: Модифікація та видалення елементів у колекціях");
+        System.out.println("Тема: Custom exceptions + автотести для перевірки винятків");
         System.out.println("======================================================");
     }
 
@@ -191,8 +191,10 @@ public class Main {
                     if (phone != null) {
                         store.addNewPhone(phone, quantity);
                     }
+                } catch (InvalidFieldValueException e) {
+                    System.out.println("Помилка валідації даних на рядку " + lineNumber + ": " + e.getMessage());
                 } catch (Exception e) {
-                    System.out.println("Помилка парсингу на рядку " + lineNumber + ".");
+                    System.out.println("Помилка парсингу на рядку " + lineNumber + ": " + e.getMessage());
                 }
             }
             System.out.println("Завантаження завершено. Записів у магазині: " + store.getInventory().size());
@@ -270,8 +272,10 @@ public class Main {
                 store.addNewPhone(phone, quantity);
                 System.out.println("Товар успішно додано до інвентарю!");
             }
+        } catch (InvalidFieldValueException e) {
+            System.out.println("Помилка створення: " + e.getMessage());
         } catch (Exception e) {
-            System.out.println("Помилка: " + e.getMessage());
+            System.out.println("Загальна помилка: " + e.getMessage());
         }
     }
 
@@ -308,39 +312,31 @@ public class Main {
                 continue;
             }
 
-            // Створюємо копію списку, щоб не змінювати оригінальний порядок
             List<StoreItem> sortedInventory = new ArrayList<>(inventory);
 
             switch (choice) {
                 case "1":
-                    // Лямбда-вираз для сортування за ціною (зростання)
-                    Comparator<StoreItem> priceComparator = (o1, o2) -> Double.compare(o1.getPhone().getPrice(), o2.getPhone().getPrice());
-                    sortedInventory.sort(priceComparator);
+                    sortedInventory.sort((o1, o2) -> Double.compare(o1.getPhone().getPrice(), o2.getPhone().getPrice()));
                     printSortedList(sortedInventory, "за ціною (зростання)");
                     break;
                 case "2":
-                    // Лямбда-вираз для сортування за пам'яттю (спадання), 
-                    // а при однаковій пам'яті - за ціною
-                    Comparator<StoreItem> storagePriceComparator = (o1, o2) -> {
+                    sortedInventory.sort((o1, o2) -> {
                         int storageCompare = Integer.compare(o2.getPhone().getStorageCapacity(), o1.getPhone().getStorageCapacity());
                         if (storageCompare == 0) {
                             return Double.compare(o1.getPhone().getPrice(), o2.getPhone().getPrice());
                         }
                         return storageCompare;
-                    };
-                    sortedInventory.sort(storagePriceComparator);
+                    });
                     printSortedList(sortedInventory, "за об'ємом пам'яті (спадання, при збігу - за ціною)");
                     break;
                 case "3":
-                    // Лямбда-вираз для сортування за маркою і моделлю
-                    Comparator<StoreItem> brandModelComparator = (o1, o2) -> {
+                    sortedInventory.sort((o1, o2) -> {
                         int brandCompare = o1.getPhone().getBrand().compareToIgnoreCase(o2.getPhone().getBrand());
                         if (brandCompare != 0) {
                             return brandCompare;
                         }
                         return o1.getPhone().getModel().compareToIgnoreCase(o2.getPhone().getModel());
-                    };
-                    sortedInventory.sort(brandModelComparator);
+                    });
                     printSortedList(sortedInventory, "за маркою та моделлю (алфавітно)");
                     break;
                 default:
@@ -372,7 +368,7 @@ public class Main {
             }
             StoreItem selectedItem = store.getInventory().get(index);
             Phone existingPhone = selectedItem.getPhone();
-            Phone newPhone = new Phone(existingPhone) {}; // Create a copy to modify
+            Phone newPhone = new Phone(existingPhone) {}; 
 
             System.out.println("Обрано: " + existingPhone);
             System.out.println("Який атрибут ви хочете змінити?");
@@ -406,13 +402,13 @@ public class Main {
                     return;
             }
 
-            if (store.update(existingPhone, newPhone)) {
-                System.out.println("Об'єкт успішно оновлено.");
-            } else {
-                System.out.println("Не вдалося оновити об'єкт.");
-            }
+            store.update(existingPhone, newPhone);
+            System.out.println("Об'єкт успішно оновлено.");
+
+        } catch (ObjectNotFoundException | InvalidFieldValueException e) {
+            System.out.println("Помилка оновлення: " + e.getMessage());
         } catch (Exception e) {
-            System.out.println("Помилка: " + e.getMessage());
+            System.out.println("Загальна помилка: " + e.getMessage());
         }
     }
 
@@ -429,14 +425,22 @@ public class Main {
                 System.out.println("Помилка: невірний номер.");
                 return;
             }
-            Phone phoneToDelete = store.getInventory().get(index).getPhone();
-            if (store.delete(phoneToDelete)) {
+            
+            StoreItem itemToDelete = store.getInventory().get(index);
+            System.out.println("Ви обрали: " + itemToDelete.getPhone().toString());
+            System.out.print("Ви впевнені, що хочете видалити цей об'єкт? (так/ні): ");
+            String confirmation = scanner.nextLine();
+
+            if (confirmation.equalsIgnoreCase("так")) {
+                store.delete(itemToDelete.getPhone());
                 System.out.println("Об'єкт успішно видалено.");
             } else {
-                System.out.println("Не вдалося видалити об'єкт.");
+                System.out.println("Видалення скасовано.");
             }
+        } catch (ObjectNotFoundException e) {
+            System.out.println("Помилка видалення: " + e.getMessage());
         } catch (Exception e) {
-            System.out.println("Помилка: " + e.getMessage());
+            System.out.println("Загальна помилка: " + e.getMessage());
         }
     }
 }
