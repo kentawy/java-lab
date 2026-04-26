@@ -2,6 +2,7 @@ package org.example;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Клас-контейнер (Агрегація), що представляє магазин телефонів.
@@ -23,44 +24,37 @@ public class Store {
         return inventory;
     }
 
-    /**
-     * Додає телефон до магазину. Якщо такий вже є - збільшує кількість.
-     */
     public void addNewPhone(Phone ph, int quantity) {
         if (ph == null || quantity <= 0) {
             throw new IllegalArgumentException("Некоректні дані для додавання.");
         }
 
-        // Шукаємо, чи є вже такий телефон у колекції
         for (StoreItem item : inventory) {
             if (item.getPhone().equals(ph)) {
                 item.addQuantity(quantity);
-                return; // Збільшили кількість і вийшли
+                return;
             }
         }
-
-        // Якщо не знайшли - додаємо новий запис
         inventory.add(new StoreItem(ph, quantity));
     }
 
-    /**
-     * Оновлює існуючий телефон у магазині.
-     */
-    public boolean update(Phone existingObject, Phone newObject) {
-        for (StoreItem item : inventory) {
-            if (item.getPhone().equals(existingObject)) {
-                item.setPhone(newObject);
-                return true;
-            }
+    public void update(Phone existingObject, Phone newObject) throws ObjectNotFoundException {
+        Optional<StoreItem> itemToUpdate = inventory.stream()
+                .filter(item -> item.getPhone().equals(existingObject))
+                .findFirst();
+
+        if (itemToUpdate.isPresent()) {
+            itemToUpdate.get().setPhone(newObject);
+        } else {
+            throw new ObjectNotFoundException("Об'єкт для оновлення не знайдено: " + existingObject);
         }
-        return false;
     }
 
-    /**
-     * Видаляє телефон з магазину.
-     */
-    public boolean delete(Phone phone) {
-        return inventory.removeIf(item -> item.getPhone().equals(phone));
+    public void delete(Phone phone) throws ObjectNotFoundException {
+        boolean removed = inventory.removeIf(item -> item.getPhone().equals(phone));
+        if (!removed) {
+            throw new ObjectNotFoundException("Об'єкт для видалення не знайдено: " + phone);
+        }
     }
 
     // --- МЕТОДИ ПОШУКУ (Без Stream API) ---
