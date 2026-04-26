@@ -22,6 +22,13 @@ public class StoreItem {
         return phone;
     }
 
+    public void setPhone(Phone phone) {
+        if (phone == null) {
+            throw new IllegalArgumentException("Телефон не може бути null.");
+        }
+        this.phone = phone;
+    }
+
     public int getQuantity() {
         return quantity;
     }
