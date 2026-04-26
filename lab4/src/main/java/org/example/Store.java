@@ -2,7 +2,6 @@ package org.example;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 /**
  * Клас-контейнер (Агрегація), що представляє магазин телефонів.
@@ -44,6 +43,26 @@ public class Store {
         inventory.add(new StoreItem(ph, quantity));
     }
 
+    /**
+     * Оновлює існуючий телефон у магазині.
+     */
+    public boolean update(Phone existingObject, Phone newObject) {
+        for (StoreItem item : inventory) {
+            if (item.getPhone().equals(existingObject)) {
+                item.setPhone(newObject);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Видаляє телефон з магазину.
+     */
+    public boolean delete(Phone phone) {
+        return inventory.removeIf(item -> item.getPhone().equals(phone));
+    }
+
     // --- МЕТОДИ ПОШУКУ (Без Stream API) ---
 
     public List<StoreItem> searchByBrand(String brand) {
@@ -74,17 +93,5 @@ public class Store {
             }
         }
         return found;
-    }
-
-    /**
-     * Шукає телефон за UUID.
-     */
-    public StoreItem searchByUuid(UUID targetUuid) {
-        for (StoreItem item : inventory) {
-            if (item.getPhone().getUuid().equals(targetUuid)) {
-                return item;
-            }
-        }
-        return null;
     }
 }
