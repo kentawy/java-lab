@@ -1,37 +1,25 @@
 package org.example;
 
-/**
- * Клас для складаних смартфонів.
- * Успадковується від SmartPhone і додає кількість екранів.
- */
 public class FoldablePhone extends SmartPhone {
-    private int numberOfScreens;
+    private int screenCount;
 
-    public FoldablePhone(String brand, String model, double price, int storageCapacity,
-                         OperatingSystem os, double cameraMegapixels, int numberOfScreens) {
+    public FoldablePhone(String brand, String model, double price, int storageCapacity, OperatingSystem os, double cameraMegapixels, int screenCount) throws InvalidFieldValueException {
         super(brand, model, price, storageCapacity, os, cameraMegapixels);
-        setNumberOfScreens(numberOfScreens);
+        this.screenCount = screenCount;
     }
 
-    public int getNumberOfScreens() {
-        return numberOfScreens;
-    }
-
-    public void setNumberOfScreens(int numberOfScreens) {
-        if (numberOfScreens < 2) {
-            throw new IllegalArgumentException("Складаний телефон повинен мати щонайменше 2 екрани.");
-        }
-        this.numberOfScreens = numberOfScreens;
+    public int getScreenCount() {
+        return screenCount;
     }
 
     @Override
     public String toFileString() {
-        return "FoldablePhone;" + getBrand() + ";" + getModel() + ";" + getPrice() + ";" +
-                getStorageCapacity() + ";" + getOs().name() + ";" + getCameraMegapixels() + ";" + numberOfScreens + ";" + getUuid().toString();
+        return "FoldablePhone;" + getBrand() + ";" + getModel() + ";" + getPrice() + ";" + getStorageCapacity() + ";" + getOs().name() + ";" + getCameraMegapixels() + ";" + screenCount;
     }
 
     @Override
     public String toString() {
-        return super.toString().replace("}", ", screens=" + numberOfScreens + "}");
+        return String.format("FoldablePhone{brand='%s', model='%s', price=%.2f, storage=%dGB, OS=%s, camera=%.1fMP, screens=%d}",
+                getBrand(), getModel(), getPrice(), getStorageCapacity(), getOs(), getCameraMegapixels(), screenCount);
     }
 }
