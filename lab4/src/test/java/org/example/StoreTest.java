@@ -15,7 +15,7 @@ class StoreTest {
 
     // Цей метод виконується перед КОЖНИМ тестом, створюючи "чистий" магазин
     @BeforeEach
-    void setUp() {
+    void setUp() throws InvalidFieldValueException {
         store = new Store("Test Store");
         // Phone тепер абстрактний, тому створюємо об'єкт конкретного класу
         testPhone = new SmartPhone("Apple", "iPhone 13", 30000, 128, OperatingSystem.IOS, 12.0);
@@ -46,7 +46,7 @@ class StoreTest {
     }
 
     @Test
-    void shouldCorrectlySearchByBrand() {
+    void shouldCorrectlySearchByBrand() throws InvalidFieldValueException {
         store.addNewPhone(testPhone, 10);
         store.addNewPhone(new SmartPhone("Samsung", "S24", 40000, 256, OperatingSystem.ANDROID, 50), 5);
 
@@ -68,5 +68,30 @@ class StoreTest {
         });
 
         assertTrue(exception.getMessage().contains("позитивну кількість"));
+    }
+
+    @Test
+    void shouldThrowObjectNotFoundExceptionWhenDeletingNonExistingObject() {
+        // Створюємо телефон, якого НЕМАЄ в магазині
+        Phone nonExistingPhone;
+        try {
+            nonExistingPhone = new SmartPhone("Nokia", "3310", 1000, 1, OperatingSystem.OTHER, 0);
+        } catch (InvalidFieldValueException e) {
+            fail("Test setup failed: " + e.getMessage());
+            return;
+        }
+
+        // Перевіряємо, що спроба видалити його кине ObjectNotFoundException
+        assertThrows(ObjectNotFoundException.class, () -> {
+            store.delete(nonExistingPhone);
+        });
+    }
+
+    @Test
+    void shouldThrowInvalidFieldValueExceptionForEmptyBrand() {
+        // Перевіряємо, що конструктор Phone кине InvalidFieldValueException при порожньому бренді
+        assertThrows(InvalidFieldValueException.class, () -> {
+            new SmartPhone("", "Some Model", 100, 1, OperatingSystem.ANDROID, 10);
+        });
     }
 }
