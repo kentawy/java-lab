@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.Comparator;
-import java.util.UUID;
 
 public class Main {
     private static final Scanner scanner = new Scanner(System.in);
@@ -27,9 +26,11 @@ public class Main {
             System.out.println("\n=== Головне меню магазину '" + store.getStoreName() + "' ===");
             System.out.println("1. Пошук товару (за критеріями)");
             System.out.println("2. Створити та додати новий товар");
-            System.out.println("3. Вивести інформацію про асортимент");
-            System.out.println("4. Вивести відсортовану інформацію про всі товари");
-            System.out.println("5. Завершити роботу програми (Зберегти у файл)");
+            System.out.println("3. Модифікувати об'єкт");
+            System.out.println("4. Видалити об'єкт");
+            System.out.println("5. Вивести інформацію про асортимент");
+            System.out.println("6. Вивести відсортовану інформацію про всі товари");
+            System.out.println("7. Завершити роботу програми (Зберегти у файл)");
             System.out.print("Виберіть опцію: ");
 
             String choice = scanner.nextLine();
@@ -42,12 +43,18 @@ public class Main {
                     showCreationMenu();
                     break;
                 case "3":
-                    showAllDevices();
+                    updateObject();
                     break;
                 case "4":
-                    showSortedDevicesMenu();
+                    deleteObject();
                     break;
                 case "5":
+                    showAllDevices();
+                    break;
+                case "6":
+                    showSortedDevicesMenu();
+                    break;
+                case "7":
                     saveToFile();
                     exit = true;
                     System.out.println("Роботу завершено. Дані збережено.");
@@ -61,10 +68,10 @@ public class Main {
 
     private static void printHeader() {
         System.out.println("======================================================");
-        System.out.println("Практична робота №16");
+        System.out.println("Практична робота №17");
         System.out.println("Виконав: студент групи ІН-33-4, Дмитренко Богдан Леонідович");
         System.out.println("Спеціальність: 122 Комп'ютерні науки");
-        System.out.println("Тема: UUID + JavaFX GUI (Part 1)");
+        System.out.println("Тема: Модифікація та видалення елементів у колекціях");
         System.out.println("======================================================");
     }
 
@@ -80,8 +87,7 @@ public class Main {
             System.out.println("1. Пошук за маркою (Brand)");
             System.out.println("2. Пошук за діапазоном ціни (Min - Max)");
             System.out.println("3. Пошук за операційною системою (OS)");
-            System.out.println("4. Пошук за UUID");
-            System.out.println("5. Повернутися до головного меню");
+            System.out.println("4. Повернутися до головного меню");
             System.out.print("Оберіть критерій пошуку: ");
 
             String choice = scanner.nextLine();
@@ -117,22 +123,6 @@ public class Main {
                     }
                     break;
                 case "4":
-                    System.out.print("Введіть UUID: ");
-                    String uuidString = scanner.nextLine();
-                    try {
-                        UUID targetUuid = UUID.fromString(uuidString);
-                        StoreItem foundItem = store.searchByUuid(targetUuid);
-                        if (foundItem != null) {
-                            System.out.println("-> Знайдено товар за UUID:");
-                            System.out.println(foundItem.toString());
-                        } else {
-                            System.out.println("-> Товар із таким UUID не знайдено.");
-                        }
-                    } catch (IllegalArgumentException e) {
-                        System.out.println("Помилка: введено некоректний формат UUID.");
-                    }
-                    break;
-                case "5":
                     back = true;
                     break;
                 default:
@@ -147,8 +137,8 @@ public class Main {
             System.out.println("-> Жодного товару за критерієм " + criteriaDescription + " не знайдено.");
         } else {
             System.out.println("-> Знайдено " + results.size() + " запис(ів) за " + criteriaDescription + ":");
-            for (StoreItem item : results) {
-                System.out.println(item.toString());
+            for (int i = 0; i < results.size(); i++) {
+                System.out.println((i + 1) + ". " + results.get(i).toString());
             }
         }
     }
@@ -175,20 +165,7 @@ public class Main {
                     double price = Double.parseDouble(parts[3]);
                     int storage = Integer.parseInt(parts[4]);
                     OperatingSystem os = OperatingSystem.valueOf(parts[5]);
-                    
-                    int quantityIndex = parts.length - 1;
-                    int quantity = Integer.parseInt(parts[quantityIndex]);
-                    
-                    // UUID має бути передостаннім (якщо він є у файлі)
-                    UUID loadedUuid = null;
-                    if (parts.length > 7) {
-                        try {
-                            loadedUuid = UUID.fromString(parts[quantityIndex - 1]);
-                        } catch (IllegalArgumentException ignored) {
-                            // Якщо не вдалося зчитати UUID, створимо новий
-                        }
-                    }
-
+                    int quantity = Integer.parseInt(parts[parts.length - 1]);
                     Phone phone = null;
 
                     switch (type) {
@@ -212,10 +189,6 @@ public class Main {
                     }
 
                     if (phone != null) {
-                        if (loadedUuid != null) {
-                            // Завдяки тому що ми додали сеттер, можемо зберегти старий ID
-                            phone.setUuid(loadedUuid);
-                        }
                         store.addNewPhone(phone, quantity);
                     }
                 } catch (Exception e) {
@@ -308,8 +281,8 @@ public class Main {
             return;
         }
         System.out.println("\n--- Всі товари в магазині ---");
-        for (StoreItem item : store.getInventory()) {
-            System.out.println(item.toString());
+        for (int i = 0; i < store.getInventory().size(); i++) {
+            System.out.println((i + 1) + ". " + store.getInventory().get(i).toString());
         }
     }
 
@@ -381,6 +354,89 @@ public class Main {
         System.out.println("\n--- Відсортовані товари " + criteria + " ---");
         for (StoreItem item : list) {
             System.out.println(item.toString());
+        }
+    }
+
+    private static void updateObject() {
+        if (store.getInventory().isEmpty()) {
+            System.out.println("Магазин порожній. Немає що оновлювати.");
+            return;
+        }
+        showAllDevices();
+        System.out.print("Введіть номер товару для модифікації: ");
+        try {
+            int index = Integer.parseInt(scanner.nextLine()) - 1;
+            if (index < 0 || index >= store.getInventory().size()) {
+                System.out.println("Помилка: невірний номер.");
+                return;
+            }
+            StoreItem selectedItem = store.getInventory().get(index);
+            Phone existingPhone = selectedItem.getPhone();
+            Phone newPhone = new Phone(existingPhone) {}; // Create a copy to modify
+
+            System.out.println("Обрано: " + existingPhone);
+            System.out.println("Який атрибут ви хочете змінити?");
+            System.out.println("1. Brand | 2. Model | 3. Price | 4. Storage | 5. OS");
+            System.out.print("Ваш вибір: ");
+            String choice = scanner.nextLine();
+
+            switch (choice) {
+                case "1":
+                    System.out.print("Введіть нову марку: ");
+                    newPhone.setBrand(scanner.nextLine());
+                    break;
+                case "2":
+                    System.out.print("Введіть нову модель: ");
+                    newPhone.setModel(scanner.nextLine());
+                    break;
+                case "3":
+                    System.out.print("Введіть нову ціну: ");
+                    newPhone.setPrice(Double.parseDouble(scanner.nextLine()));
+                    break;
+                case "4":
+                    System.out.print("Введіть новий об'єм пам'яті: ");
+                    newPhone.setStorageCapacity(Integer.parseInt(scanner.nextLine()));
+                    break;
+                case "5":
+                    System.out.print("Введіть нову ОС (ANDROID, IOS, HARMONY_OS, OTHER): ");
+                    newPhone.setOs(OperatingSystem.valueOf(scanner.nextLine().toUpperCase()));
+                    break;
+                default:
+                    System.out.println("Невідома опція.");
+                    return;
+            }
+
+            if (store.update(existingPhone, newPhone)) {
+                System.out.println("Об'єкт успішно оновлено.");
+            } else {
+                System.out.println("Не вдалося оновити об'єкт.");
+            }
+        } catch (Exception e) {
+            System.out.println("Помилка: " + e.getMessage());
+        }
+    }
+
+    private static void deleteObject() {
+        if (store.getInventory().isEmpty()) {
+            System.out.println("Магазин порожній. Немає що видаляти.");
+            return;
+        }
+        showAllDevices();
+        System.out.print("Введіть номер товару для видалення: ");
+        try {
+            int index = Integer.parseInt(scanner.nextLine()) - 1;
+            if (index < 0 || index >= store.getInventory().size()) {
+                System.out.println("Помилка: невірний номер.");
+                return;
+            }
+            Phone phoneToDelete = store.getInventory().get(index).getPhone();
+            if (store.delete(phoneToDelete)) {
+                System.out.println("Об'єкт успішно видалено.");
+            } else {
+                System.out.println("Не вдалося видалити об'єкт.");
+            }
+        } catch (Exception e) {
+            System.out.println("Помилка: " + e.getMessage());
         }
     }
 }
