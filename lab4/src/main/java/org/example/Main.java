@@ -15,7 +15,7 @@ import java.util.Scanner;
 public class Main {
     private static final Scanner scanner = new Scanner(System.in);
     private static final Store store = new Store("TechStore СумДУ");
-    private static final String FILE_NAME = "input.txt";
+    private static final String FILE_NAME = "lab4/input.txt";
 
     public static void main(String[] args) {
         printHeader();
@@ -45,7 +45,7 @@ public class Main {
                     showAllDevices();
                     break;
                 case "4":
-                    showSortedDevices();
+                    showSortedDevicesMenu();
                     break;
                 case "5":
                     saveToFile();
@@ -61,10 +61,10 @@ public class Main {
 
     private static void printHeader() {
         System.out.println("======================================================");
-        System.out.println("Практична робота №13");
+        System.out.println("Практична робота №14");
         System.out.println("Виконав: студент групи ІН-33-4, Дмитренко Богдан Леонідович");
         System.out.println("Спеціальність: 122 Комп'ютерні науки");
-        System.out.println("Тема: Abstract classes, interfaces, interface Comparable");
+        System.out.println("Тема: Inner classes, interface Comparator");
         System.out.println("======================================================");
     }
 
@@ -279,22 +279,84 @@ public class Main {
         }
     }
 
-    private static void showSortedDevices() {
+    private static void showSortedDevicesMenu() {
         List<StoreItem> inventory = store.getInventory();
         if (inventory.isEmpty()) {
             System.out.println("Асортимент порожній.");
             return;
         }
         
-        // Створюємо копію списку, щоб не змінювати оригінальний порядок
-        List<StoreItem> sortedInventory = new ArrayList<>(inventory);
-        
-        // Сортуємо копію. Оскільки Phone реалізує Comparable, ми можемо
-        // передати Comparator, який буде порівнювати телефони всередині StoreItem.
-        sortedInventory.sort(Comparator.comparing(StoreItem::getPhone));
-        
-        System.out.println("\n--- Відсортовані товари за маркою ---");
-        for (StoreItem item : sortedInventory) {
+        boolean back = false;
+        while (!back) {
+            System.out.println("\nОберіть критерій сортування:");
+            System.out.println("1. Сортувати за ціною (зростання)");
+            System.out.println("2. Сортувати за об'ємом пам'яті (спадання, а при збігу - за ціною)");
+            System.out.println("3. Сортувати за маркою та моделлю (алфавітно)");
+            System.out.println("0. Повернутися в головне меню");
+            System.out.print("Ваш вибір: ");
+
+            String choice = scanner.nextLine();
+            if (choice.equals("0")) {
+                back = true;
+                continue;
+            }
+
+            // Створюємо копію списку, щоб не змінювати оригінальний порядок
+            List<StoreItem> sortedInventory = new ArrayList<>(inventory);
+
+            switch (choice) {
+                case "1":
+                    // Анонімний клас для сортування за ціною (зростання)
+                    Collections.sort(sortedInventory, new Comparator<StoreItem>() {
+                        @Override
+                        public int compare(StoreItem o1, StoreItem o2) {
+                            return Double.compare(o1.getPhone().getPrice(), o2.getPhone().getPrice());
+                        }
+                    });
+                    printSortedList(sortedInventory, "за ціною (зростання)");
+                    break;
+                case "2":
+                    // Анонімний клас для сортування за пам'яттю (спадання), 
+                    // а при однаковій пам'яті - за ціною
+                    Collections.sort(sortedInventory, new Comparator<StoreItem>() {
+                        @Override
+                        public int compare(StoreItem o1, StoreItem o2) {
+                            // Спочатку порівнюємо пам'ять (зворотний порядок для спадання)
+                            int storageCompare = Integer.compare(o2.getPhone().getStorageCapacity(), o1.getPhone().getStorageCapacity());
+                            
+                            // Якщо пам'ять однакова, порівнюємо за ціною (зростання)
+                            if (storageCompare == 0) {
+                                return Double.compare(o1.getPhone().getPrice(), o2.getPhone().getPrice());
+                            }
+                            return storageCompare;
+                        }
+                    });
+                    printSortedList(sortedInventory, "за об'ємом пам'яті (спадання, при збігу - за ціною)");
+                    break;
+                case "3":
+                    // Анонімний клас для сортування за маркою і моделлю
+                    Collections.sort(sortedInventory, new Comparator<StoreItem>() {
+                        @Override
+                        public int compare(StoreItem o1, StoreItem o2) {
+                            int brandCompare = o1.getPhone().getBrand().compareToIgnoreCase(o2.getPhone().getBrand());
+                            if (brandCompare != 0) {
+                                return brandCompare;
+                            }
+                            return o1.getPhone().getModel().compareToIgnoreCase(o2.getPhone().getModel());
+                        }
+                    });
+                    printSortedList(sortedInventory, "за маркою та моделлю (алфавітно)");
+                    break;
+                default:
+                    System.out.println("Помилка: невідома опція.");
+                    break;
+            }
+        }
+    }
+
+    private static void printSortedList(List<StoreItem> list, String criteria) {
+        System.out.println("\n--- Відсортовані товари " + criteria + " ---");
+        for (StoreItem item : list) {
             System.out.println(item.toString());
         }
     }
