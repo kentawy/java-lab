@@ -2,6 +2,7 @@ package org.example;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Клас-контейнер (Агрегація), що представляє магазин телефонів.
@@ -73,5 +74,17 @@ public class Store {
             }
         }
         return found;
+    }
+
+    /**
+     * Шукає телефон за UUID.
+     */
+    public StoreItem searchByUuid(UUID targetUuid) {
+        for (StoreItem item : inventory) {
+            if (item.getPhone().getUuid().equals(targetUuid)) {
+                return item;
+            }
+        }
+        return null;
     }
 }

@@ -7,13 +7,15 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Scanner;
+import java.util.Comparator;
+import java.util.UUID;
 
 public class Main {
     private static final Scanner scanner = new Scanner(System.in);
-    // Використовуємо клас-контейнер замість прямого ArrayList
     private static final Store store = new Store("TechStore СумДУ");
-    private static final String FILE_NAME = "input.txt";
+    private static final String FILE_NAME = "lab4/input.txt";
 
     public static void main(String[] args) {
         printHeader();
@@ -26,7 +28,8 @@ public class Main {
             System.out.println("1. Пошук товару (за критеріями)");
             System.out.println("2. Створити та додати новий товар");
             System.out.println("3. Вивести інформацію про асортимент");
-            System.out.println("4. Завершити роботу програми (Зберегти у файл)");
+            System.out.println("4. Вивести відсортовану інформацію про всі товари");
+            System.out.println("5. Завершити роботу програми (Зберегти у файл)");
             System.out.print("Виберіть опцію: ");
 
             String choice = scanner.nextLine();
@@ -42,6 +45,9 @@ public class Main {
                     showAllDevices();
                     break;
                 case "4":
+                    showSortedDevicesMenu();
+                    break;
+                case "5":
                     saveToFile();
                     exit = true;
                     System.out.println("Роботу завершено. Дані збережено.");
@@ -55,14 +61,12 @@ public class Main {
 
     private static void printHeader() {
         System.out.println("======================================================");
-        System.out.println("Практична робота №11");
+        System.out.println("Практична робота №16");
         System.out.println("Виконав: студент групи ІН-33-4, Дмитренко Богдан Леонідович");
         System.out.println("Спеціальність: 122 Комп'ютерні науки");
-        System.out.println("Тема: Колекції, агрегація, класи-обгортки");
+        System.out.println("Тема: UUID + JavaFX GUI (Part 1)");
         System.out.println("======================================================");
     }
-
-    // --- БЛОК ПОШУКУ (Викликає методи з Store) ---
 
     private static void showSearchMenu() {
         if (store.getInventory().isEmpty()) {
@@ -76,7 +80,8 @@ public class Main {
             System.out.println("1. Пошук за маркою (Brand)");
             System.out.println("2. Пошук за діапазоном ціни (Min - Max)");
             System.out.println("3. Пошук за операційною системою (OS)");
-            System.out.println("4. Повернутися до головного меню");
+            System.out.println("4. Пошук за UUID");
+            System.out.println("5. Повернутися до головного меню");
             System.out.print("Оберіть критерій пошуку: ");
 
             String choice = scanner.nextLine();
@@ -112,6 +117,22 @@ public class Main {
                     }
                     break;
                 case "4":
+                    System.out.print("Введіть UUID: ");
+                    String uuidString = scanner.nextLine();
+                    try {
+                        UUID targetUuid = UUID.fromString(uuidString);
+                        StoreItem foundItem = store.searchByUuid(targetUuid);
+                        if (foundItem != null) {
+                            System.out.println("-> Знайдено товар за UUID:");
+                            System.out.println(foundItem.toString());
+                        } else {
+                            System.out.println("-> Товар із таким UUID не знайдено.");
+                        }
+                    } catch (IllegalArgumentException e) {
+                        System.out.println("Помилка: введено некоректний формат UUID.");
+                    }
+                    break;
+                case "5":
                     back = true;
                     break;
                 default:
@@ -131,8 +152,6 @@ public class Main {
             }
         }
     }
-
-    // --- БЛОК РОБОТИ З ФАЙЛАМИ ---
 
     private static void loadFromFile() {
         File file = new File(FILE_NAME);
@@ -156,14 +175,25 @@ public class Main {
                     double price = Double.parseDouble(parts[3]);
                     int storage = Integer.parseInt(parts[4]);
                     OperatingSystem os = OperatingSystem.valueOf(parts[5]);
+                    
+                    int quantityIndex = parts.length - 1;
+                    int quantity = Integer.parseInt(parts[quantityIndex]);
+                    
+                    // UUID має бути передостаннім (якщо він є у файлі)
+                    UUID loadedUuid = null;
+                    if (parts.length > 7) {
+                        try {
+                            loadedUuid = UUID.fromString(parts[quantityIndex - 1]);
+                        } catch (IllegalArgumentException ignored) {
+                            // Якщо не вдалося зчитати UUID, створимо новий
+                        }
+                    }
 
-                    // Кількість завжди остання в рядку
-                    int quantity = Integer.parseInt(parts[parts.length - 1]);
                     Phone phone = null;
 
                     switch (type) {
                         case "Phone":
-                            phone = new Phone(brand, model, price, storage, os);
+                            System.out.println("Рядок " + lineNumber + ": пропущено (Phone тепер абстрактний).");
                             break;
                         case "SmartPhone":
                             phone = new SmartPhone(brand, model, price, storage, os, Double.parseDouble(parts[6]));
@@ -182,6 +212,10 @@ public class Main {
                     }
 
                     if (phone != null) {
+                        if (loadedUuid != null) {
+                            // Завдяки тому що ми додали сеттер, можемо зберегти старий ID
+                            phone.setUuid(loadedUuid);
+                        }
                         store.addNewPhone(phone, quantity);
                     }
                 } catch (Exception e) {
@@ -206,19 +240,17 @@ public class Main {
         }
     }
 
-    // --- БЛОК СТВОРЕННЯ ---
-
     private static void showCreationMenu() {
         System.out.println("\n--- Меню створення товару ---");
-        System.out.println("1. Phone | 2. SmartPhone | 3. KeypadPhone | 4. GamingPhone | 5. FoldablePhone");
-        System.out.print("Оберіть тип (1-5) або 0 для скасування: ");
+        System.out.println("2. SmartPhone | 3. KeypadPhone | 4. GamingPhone | 5. FoldablePhone");
+        System.out.print("Оберіть тип (2-5) або 0 для скасування: ");
 
         String choice = scanner.nextLine();
         if (choice.equals("0")) return;
 
         try {
             int type = Integer.parseInt(choice);
-            if (type >= 1 && type <= 5) {
+            if (type >= 2 && type <= 5) {
                 System.out.print("Введіть кількість для додавання (шт): ");
                 int quantity = Integer.parseInt(scanner.nextLine());
                 addDevice(type, quantity);
@@ -244,9 +276,7 @@ public class Main {
             OperatingSystem os = OperatingSystem.valueOf(scanner.nextLine().toUpperCase());
 
             Phone phone = null;
-            if (type == 1) {
-                phone = new Phone(brand, model, price, storage, os);
-            } else if (type == 3) {
+            if (type == 3) {
                 System.out.print("Чи є ліхтарик? (true/false): ");
                 phone = new KeypadPhone(brand, model, price, storage, os, Boolean.parseBoolean(scanner.nextLine()));
             } else {
@@ -279,6 +309,77 @@ public class Main {
         }
         System.out.println("\n--- Всі товари в магазині ---");
         for (StoreItem item : store.getInventory()) {
+            System.out.println(item.toString());
+        }
+    }
+
+    private static void showSortedDevicesMenu() {
+        List<StoreItem> inventory = store.getInventory();
+        if (inventory.isEmpty()) {
+            System.out.println("Асортимент порожній.");
+            return;
+        }
+        
+        boolean back = false;
+        while (!back) {
+            System.out.println("\nОберіть критерій сортування:");
+            System.out.println("1. Сортувати за ціною (зростання)");
+            System.out.println("2. Сортувати за об'ємом пам'яті (спадання, а при збігу - за ціною)");
+            System.out.println("3. Сортувати за маркою та моделлю (алфавітно)");
+            System.out.println("0. Повернутися в головне меню");
+            System.out.print("Ваш вибір: ");
+
+            String choice = scanner.nextLine();
+            if (choice.equals("0")) {
+                back = true;
+                continue;
+            }
+
+            // Створюємо копію списку, щоб не змінювати оригінальний порядок
+            List<StoreItem> sortedInventory = new ArrayList<>(inventory);
+
+            switch (choice) {
+                case "1":
+                    // Лямбда-вираз для сортування за ціною (зростання)
+                    Comparator<StoreItem> priceComparator = (o1, o2) -> Double.compare(o1.getPhone().getPrice(), o2.getPhone().getPrice());
+                    sortedInventory.sort(priceComparator);
+                    printSortedList(sortedInventory, "за ціною (зростання)");
+                    break;
+                case "2":
+                    // Лямбда-вираз для сортування за пам'яттю (спадання), 
+                    // а при однаковій пам'яті - за ціною
+                    Comparator<StoreItem> storagePriceComparator = (o1, o2) -> {
+                        int storageCompare = Integer.compare(o2.getPhone().getStorageCapacity(), o1.getPhone().getStorageCapacity());
+                        if (storageCompare == 0) {
+                            return Double.compare(o1.getPhone().getPrice(), o2.getPhone().getPrice());
+                        }
+                        return storageCompare;
+                    };
+                    sortedInventory.sort(storagePriceComparator);
+                    printSortedList(sortedInventory, "за об'ємом пам'яті (спадання, при збігу - за ціною)");
+                    break;
+                case "3":
+                    // Лямбда-вираз для сортування за маркою і моделлю
+                    Comparator<StoreItem> brandModelComparator = (o1, o2) -> {
+                        int brandCompare = o1.getPhone().getBrand().compareToIgnoreCase(o2.getPhone().getBrand());
+                        if (brandCompare != 0) {
+                            return brandCompare;
+                        }
+                        return o1.getPhone().getModel().compareToIgnoreCase(o2.getPhone().getModel());
+                    };
+                    sortedInventory.sort(brandModelComparator);
+                    printSortedList(sortedInventory, "за маркою та моделлю (алфавітно)");
+                    break;
+                default:
+                    System.out.println("Помилка: невідома опція.");
+                    break;
+            }
+        }
+    }
+
+    private static void printSortedList(List<StoreItem> list, String criteria) {
+        System.out.println("\n--- Відсортовані товари " + criteria + " ---");
+        for (StoreItem item : list) {
             System.out.println(item.toString());
         }
     }
